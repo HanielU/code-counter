@@ -1,0 +1,151 @@
+use std::error::Error;
+use std::fs;
+use std::io::{StdoutLock, Write};
+use std::path::Path;
+
+// use serde::{Deserialize, Serialize};
+// #[derive(Deserialize, Serialize, Debug)]
+// struct IgnoreList {
+//     ignore_files: Vec<String>,
+//     ignore_folders: Vec<String>,
+// }
+
+
+fn count_lines_in_file(file_path: &str) -> Result<usize, Box<dyn Error>> {
+    let contents = fs::read_to_string(file_path)?;
+    Ok(contents.lines().count())
+}
+
+fn count_lines_in_directory(
+    path: &Path,
+    ignore_files: [&str; 30],
+    ignore_folders: [&str; 15],
+    total: &mut usize,
+    bad_files: &mut usize,
+    handle: &mut StdoutLock,
+) -> Result<(), Box<dyn Error>> {
+    let path_str = path.to_str().unwrap();
+    if ignore_folders
+        .iter()
+        .any(|folder| path_str.contains(folder))
+    {
+        return Ok(());
+    }
+
+    for entry in fs::read_dir(path)? {
+        let entry = entry?;
+        let file_type = entry.file_type()?;
+        let file_path = entry.path();
+        let file_name = file_path.to_str().unwrap();
+
+        if file_type.is_file()
+            && ignore_files.iter().all(|file| !file_name.contains(file))
+        {
+            match count_lines_in_file(file_name) {
+                Ok(count) => {
+                    *total += count;
+                    write!(
+                        handle,
+                        "lines of code in {} = {}, total = {}\n",
+                        file_name, count, total
+                    )?;
+                }
+                Err(_) => {
+                    *bad_files += 1;
+                    write!(
+                        handle,
+                        "Could not count this file: {}\n",
+                        file_name
+                    )?;
+                }
+            }
+        } else if file_type.is_dir() {
+            count_lines_in_directory(
+                &file_path,
+                ignore_files,
+                ignore_folders,
+                total,
+                bad_files,
+                handle,
+            )?;
+        }
+    }
+
+    Ok(())
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let project_root = Path::new(".");
+    let ignore_folders = [
+        ".vscode",
+        "misc",
+        "assets",
+        "android",
+        ".turbo",
+        "dist",
+        "target",
+        ".yarn",
+        "build",
+        ".git",
+        "svg",
+        "icons",
+        "node_modules",
+        ".svelte-kit",
+        "static",
+    ];
+    let ignore_files = [
+        ".env",
+        "ignore.json",
+        ".yarnrc.yml",
+        ".prettierignore",
+        "app.d.ts",
+        "todo.txt",
+        "_path.txt",
+        ".eslint.cjs",
+        ".prettierrc",
+        "count.py",
+        ".gitignore",
+        "package-lock.json",
+        "Cargo.lock",
+        "Cargo.toml",
+        "yarn.lock",
+        "pnpm-lock.yaml",
+        "package.json",
+        "tsconfig.json",
+        ".npmrc",
+        "global.d.ts",
+        "svelte.config.js",
+        "tailwind.config.cjs",
+        "postcss.config.cjs",
+        "vite.config.ts",
+        "stats.html",
+        ".eslintcache",
+        "README.md",
+        "TODO.md",
+        ".eslintrc.cjs",
+        ".deepsource.toml",
+    ];
+        // let ignore_list = fs::read_to_string("ignore.json")?;
+    // let ignore_list: IgnoreList = serde_json::from_str(&ignore_list)?;
+    // let ignore_files = &ignore_list.ignore_files;
+    // let ignore_folders = &ignore_list.ignore_folders;
+    let mut total = 0;
+    let mut bad_files = 0;
+    let mut handle = std::io::stdout().lock();
+    count_lines_in_directory(
+        project_root,
+        ignore_files,
+        ignore_folders,
+        &mut total,
+        &mut bad_files,
+        &mut handle,
+    )?;
+
+    write!(
+        handle,
+        "\nCounted a total of {} lines, encountered {} BAD FILES\n",
+        total, bad_files
+    )?;
+
+    Ok(())
+}
