@@ -20,8 +20,8 @@ fn count_lines_in_file(
 
 fn count_lines_in_directory(
     path: &Path,
-    ignore_files: [&str; 30],
-    ignore_folders: [&str; 23],
+    ignore_files: [&str; 31],
+    ignore_folders: [&str; 27],
     total_files: &mut usize,
     total_lines: &mut usize,
     total_chars: &mut usize,
@@ -108,9 +108,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = std::env::args().collect();
     let project_root = Path::new(".");
     #[rustfmt::skip]
-    let ignore_folders = [ ".vscode", "misc", "assets", "android", ".turbo", "dist", "target", ".yarn", "build", ".git", "svg", "icons", "node_modules", ".svelte-kit", ".next", ".solid", ".nuxt", "pocketbase", "images", "fonts", "platforms", "App_Resources", "static", ];
+    let ignore_folders = [ ".vscode", "$houdini", ".netlify", ".vercel", "public", "misc", "assets", "android", ".turbo", "dist", "target", ".yarn", "build", ".git", "svg", "icons", "node_modules", ".svelte-kit", ".next", ".solid", ".nuxt", "pocketbase", "images", "fonts", "platforms", "App_Resources", "static", ];
     #[rustfmt::skip]
-    let ignore_files = [ ".env", "ignore.json", ".yarnrc.yml", ".prettierignore", "app.d.ts", "todo.txt", "_path.txt", ".eslint.cjs", ".prettierrc", "count.py", ".gitignore", "package-lock.json", "Cargo.lock", "Cargo.toml", "yarn.lock", "pnpm-lock.yaml", "package.json", "tsconfig.json", ".npmrc", "global.d.ts", "svelte.config.js", "tailwind.config.cjs", "postcss.config.cjs", "vite.config.ts", "stats.html", ".eslintcache", "README.md", "TODO.md", ".eslintrc.cjs", ".deepsource.toml", ];
+    let ignore_files = [ ".env", "schema.graphql", "ignore.json", ".yarnrc.yml", ".prettierignore", "app.d.ts", "todo.txt", "_path.txt", ".eslint.cjs", ".prettierrc", "count.py", ".gitignore", "package-lock.json", "Cargo.lock", "Cargo.toml", "yarn.lock", "pnpm-lock.yaml", "package.json", "tsconfig.json", ".npmrc", "global.d.ts", "svelte.config.js", "tailwind.config.cjs", "postcss.config.cjs", "vite.config.ts", "stats.html", ".eslintcache", "README.md", "TODO.md", ".eslintrc.cjs", ".deepsource.toml", ];
 
     let mut total_lines = 0;
     let mut total_files = 0;
